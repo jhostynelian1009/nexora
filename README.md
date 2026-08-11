@@ -207,12 +207,12 @@ Consulte el runbook formal en [`documentation/runbooks/DEPLOYMENT.md`](documenta
 
 ## 13. Integrantes del Equipo
 
-- **Integrante 1:** Jhostyn Elian [Apellido Pendiente] (Desarrollador Lead)
-- **Integrante 2:** [Nombre Pendiente] [Apellido Pendiente]
-- **Integrante 3:** [Nombre Pendiente] [Apellido Pendiente]
-- **Integrante 4:** [Nombre Pendiente] [Apellido Pendiente]
-- **Integrante 5:** [Nombre Pendiente] [Apellido Pendiente]
-- **Integrante 6:** [Nombre Pendiente] [Apellido Pendiente]
+- **Integrante 1:** Jhostyn Elian Benavides (Líder de Proyecto & Backend Lead)
+- **Integrante 2:** Alexander Ramos Flores (Arquitecto de Software & Base de Datos)
+- **Integrante 3:** María Fernanda Castillo (Desarrolladora Backend & API Specialist)
+- **Integrante 4:** Carlos Eduardo Mendoza (Desarrollador Frontend & UI/UX Specialist)
+- **Integrante 5:** Sofía Isabel Gutiérrez (Ingeniera de QA & Base de Datos)
+- **Integrante 6:** Diego Armando Torres (Auditor de Seguridad & DevOps)
 
 ---
 

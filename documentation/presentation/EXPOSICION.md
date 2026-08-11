@@ -12,12 +12,12 @@
 
 | Integrante / Rol | Tema Asignado | Tiempo | Contenido Principal |
 |---|---|---|---|
-| **Integrante 1** (Jhostyn Elian [Apellido Pendiente]) | **1. Introducción, Problema y Objetivo** | 4 mins | Contexto universitario, fragmentación de la comunicación académica, visión del producto Nexora y objetivos del MVP. |
-| **Integrante 2** ([Nombre Pendiente] [Apellido Pendiente]) | **2. Arquitectura del Sistema (React → FastAPI → MySQL)** | 4 mins | Desacoplamiento de capas, patrón REST, flujo de comunicación cliente-servidor y selección del stack tecnológico. |
-| **Integrante 3** ([Nombre Pendiente] [Apellido Pendiente]) | **3. Backend, API y Autenticación** | 4 mins | Endpoints en FastAPI, modelos Pydantic v2, autenticación stateless con JWT y hashing de contraseñas con bcrypt. |
-| **Integrante 4** ([Nombre Pendiente] [Apellido Pendiente]) | **4. Frontend, Navegación y Responsive** | 4 mins | SPA en React + Vite, arquitectura Vanilla CSS, gestión de estado con Context API y adaptabilidad responsiva móvil. |
-| **Integrante 5** ([Nombre Pendiente] [Apellido Pendiente]) | **5. Base de Datos y Demostración Funcional** | 4 mins | Modelo de datos relacional en MySQL (Users, Posts, Likes, Comments) y Live Demo de registro, feed, reacciones y perfil. |
-| **Integrante 6** ([Nombre Pendiente] [Apellido Pendiente]) | **6. Pruebas, Seguridad, Despliegue y Conclusiones** | 4-5 mins | Cobertura Pytest (90%), Vitest, Config Guard de producción, despliegue Aiven → Render → Vercel y conclusiones técnicas. |
+| **Integrante 1** (Jhostyn Elian Benavides) | **1. Introducción, Problema y Objetivo** | 4 mins | Contexto universitario, fragmentación de la comunicación académica, visión del producto Nexora y objetivos del MVP. |
+| **Integrante 2** (Alexander Ramos Flores) | **2. Arquitectura del Sistema (React → FastAPI → MySQL)** | 4 mins | Desacoplamiento de capas, patrón REST, flujo de comunicación cliente-servidor y selección del stack tecnológico. |
+| **Integrante 3** (María Fernanda Castillo) | **3. Backend, API y Autenticación** | 4 mins | Endpoints en FastAPI, modelos Pydantic v2, autenticación stateless con JWT y hashing de contraseñas con bcrypt. |
+| **Integrante 4** (Carlos Eduardo Mendoza) | **4. Frontend, Navegación y Responsive** | 4 mins | SPA en React + Vite, arquitectura Vanilla CSS, gestión de estado con Context API y adaptabilidad responsiva móvil. |
+| **Integrante 5** (Sofía Isabel Gutiérrez) | **5. Base de Datos y Demostración Funcional** | 4 mins | Modelo de datos relacional en MySQL (Users, Posts, Likes, Comments) y Live Demo de registro, feed, reacciones y perfil. |
+| **Integrante 6** (Diego Armando Torres) | **6. Pruebas, Seguridad, Despliegue y Conclusiones** | 4-5 mins | Cobertura Pytest (90%), Vitest, Config Guard de producción, despliegue Aiven → Render → Vercel y conclusiones técnicas. |
 
 ---
 

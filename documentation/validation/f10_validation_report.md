@@ -128,7 +128,7 @@
 
 ## 6. Condiciones Pendientes Mantenidas
 
-1. **Apellidos de Integrantes:** Marcadores `[Apellido Pendiente]` preservados en 5 de los 6 integrantes a la espera de la confirmación de datos completos.
+1. **Apellidos de Integrantes:** Todos los integrantes del equipo (Integrantes 1 a 6) tienen asignados sus nombres y apellidos completos en `README.md` y `EXPOSICION.md`.
 2. **Decisión Humana sobre RSK-004:** La ausencia de Rate Limiting en los endpoints de autenticación queda registrada como un riesgo residual MEDIO, cuya aceptación o mitigación previa al despliegue público debe ser decidida por la dirección humana.
 3. **Verificación de Disponibilidad Post-Despliegue (RNF-012 / B-022):** La prueba de disponibilidad online del sistema desplegado en la nube se completará únicamente durante la ejecución de la Fase f₁₁.
 

@@ -4,9 +4,9 @@
 
 ## Requisitos
 
-- Python 3.12.
+- Python 3.14.5 (Compatible con Python 3.10+ / 3.12+).
 - Node.js 22 o superior.
-- XAMPP con MySQL activo.
+- XAMPP con MySQL activo (soporta puerto estándar 3306 o 3307).
 - Git.
 
 ## Preparar MySQL en XAMPP

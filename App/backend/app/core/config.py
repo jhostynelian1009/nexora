@@ -7,6 +7,7 @@ class Settings(BaseSettings):
     APP_NAME: str = "Nexora API"
     ENVIRONMENT: str = "development"
     DATABASE_URL: str = "mysql+pymysql://root:@127.0.0.1:3307/nexora"
+    TEST_DATABASE_URL: str = "mysql+pymysql://root:@127.0.0.1:3307/nexora_test"
     SECRET_KEY: str = "nexora_super_secret_jwt_key_2026_dev"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
     CORS_ORIGINS: Union[str, List[str]] = "http://localhost:5173,http://127.0.0.1:5173"

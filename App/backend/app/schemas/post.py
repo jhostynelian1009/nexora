@@ -16,6 +16,16 @@ class PostCreate(BaseModel):
             raise ValueError("El contenido de la publicación no puede estar vacío.")
         return stripped
 
+    @field_validator("image_url")
+    @classmethod
+    def validate_image_url(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v.strip() != "":
+            stripped = v.strip()
+            if not (stripped.startswith("http://") or stripped.startswith("https://")):
+                raise ValueError("La URL de la imagen debe comenzar con http:// o https://")
+            return stripped
+        return None
+
 class PostResponse(BaseModel):
     id: int
     content: str

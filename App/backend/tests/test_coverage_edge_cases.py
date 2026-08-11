@@ -1,9 +1,33 @@
 # Ref: RNF-007, B-018
 import pytest
+from app.core.config import Settings
 from app.core.security import decode_access_token, verify_password, create_access_token
 from app.services.user_service import UserService
 from tests.test_posts import get_auth_headers
 from tests.conftest import verify_safety_guard
+
+def test_production_security_guard_rejected_placeholder():
+    with pytest.raises(ValueError, match="SECURITY GUARD ERROR"):
+        Settings(
+            ENVIRONMENT="production",
+            SECRET_KEY="short_key_with_dev_placeholder_12345"
+        )
+
+def test_production_security_guard_rejected_short_key():
+    with pytest.raises(ValueError, match="SECURITY GUARD ERROR"):
+        Settings(
+            ENVIRONMENT="production",
+            SECRET_KEY="secure_key_without_placeholders_but_too_short"
+        )
+
+def test_production_security_guard_accepted():
+    valid_key = "a9f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7b6a5f4e3d2c1b0a9f8"
+    st = Settings(
+        ENVIRONMENT="production",
+        SECRET_KEY=valid_key
+    )
+    assert st.ENVIRONMENT == "production"
+    assert st.SECRET_KEY == valid_key
 
 def test_safety_guard_prevents_non_test_db_drop(monkeypatch):
     from tests import conftest
@@ -89,3 +113,14 @@ def test_schema_validators_empty_fields(client):
     post_resp = client.post("/api/posts", json={"content": "Post base"}, headers=headers).json()
     resp_cm = client.post(f"/api/posts/{post_resp['id']}/comments", json={"content": "    "}, headers=headers)
     assert resp_cm.status_code == 422
+
+def test_invalid_url_schemes_rejected(client):
+    headers = get_auth_headers(client, "url_test@example.com")
+
+    # Invalid image_url in post
+    resp_post = client.post("/api/posts", json={"content": "Bad image url", "image_url": "javascript:alert(1)"}, headers=headers)
+    assert resp_post.status_code == 422
+
+    # Invalid avatar_url in profile
+    resp_avatar = client.put("/api/users/me", json={"avatar_url": "ftp://malicious.site/avatar.png"}, headers=headers)
+    assert resp_avatar.status_code == 422

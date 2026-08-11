@@ -62,3 +62,13 @@ class UserUpdate(BaseModel):
                 raise ValueError("El campo no puede estar vacío.")
             return stripped
         return v
+
+    @field_validator("avatar_url")
+    @classmethod
+    def validate_avatar_url(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v.strip() != "":
+            stripped = v.strip()
+            if not (stripped.startswith("http://") or stripped.startswith("https://")):
+                raise ValueError("La URL del avatar debe comenzar con http:// o https://")
+            return stripped
+        return None

@@ -1,4 +1,4 @@
-# Ref: RF-001, RF-006, B-002
+# Ref: RF-001, RF-006, B-002, B2-002, B2-003, B2-007
 from datetime import datetime, timezone
 from typing import List, TYPE_CHECKING
 from sqlalchemy import String, DateTime, Integer
@@ -9,6 +9,10 @@ if TYPE_CHECKING:
     from app.models.post import Post
     from app.models.like import Like
     from app.models.comment import Comment
+    from app.models.follow import Follow
+    from app.models.conversation import ConversationMember, Message
+    from app.models.notification import Notification
+    from app.models.password_reset import PasswordResetCode
 
 class User(Base):
     __tablename__ = "users"
@@ -20,8 +24,21 @@ class User(Base):
     career: Mapped[str] = mapped_column(String(120), nullable=False)
     bio: Mapped[str] = mapped_column(String(240), nullable=False, default="Aprendiendo y conectando en Nexora.")
     avatar_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    avatar_public_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    phone: Mapped[str | None] = mapped_column(String(30), nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc))
 
     posts: Mapped[List["Post"]] = relationship("Post", back_populates="author", cascade="all, delete-orphan")
     likes: Mapped[List["Like"]] = relationship("Like", back_populates="user", cascade="all, delete-orphan")
     comments: Mapped[List["Comment"]] = relationship("Comment", back_populates="author", cascade="all, delete-orphan")
+
+    following: Mapped[List["Follow"]] = relationship("Follow", foreign_keys="Follow.follower_id", back_populates="follower", cascade="all, delete-orphan")
+    followers: Mapped[List["Follow"]] = relationship("Follow", foreign_keys="Follow.followed_id", back_populates="followed", cascade="all, delete-orphan")
+
+    conversation_memberships: Mapped[List["ConversationMember"]] = relationship("ConversationMember", back_populates="user", cascade="all, delete-orphan")
+    sent_messages: Mapped[List["Message"]] = relationship("Message", back_populates="sender", cascade="all, delete-orphan")
+
+    notifications_received: Mapped[List["Notification"]] = relationship("Notification", foreign_keys="Notification.recipient_id", back_populates="recipient", cascade="all, delete-orphan")
+    notifications_acted: Mapped[List["Notification"]] = relationship("Notification", foreign_keys="Notification.actor_id", back_populates="actor", cascade="all, delete-orphan")
+
+    password_resets: Mapped[List["PasswordResetCode"]] = relationship("PasswordResetCode", back_populates="user", cascade="all, delete-orphan")

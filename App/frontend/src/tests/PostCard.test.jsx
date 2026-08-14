@@ -1,6 +1,7 @@
 // Ref: RNF-007, B-013, B-019
 import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
+import { MemoryRouter } from 'react-router-dom';
 import { PostCard } from '../components/PostCard';
 import { AuthProvider } from '../context/AuthContext';
 import { vi } from 'vitest';
@@ -28,14 +29,16 @@ describe('PostCard', () => {
     const handleDeletePost = vi.fn();
 
     render(
-      <AuthProvider>
-        <PostCard
-          post={mockPost}
-          onToggleLike={handleToggleLike}
-          onAddComment={handleAddComment}
-          onDeletePost={handleDeletePost}
-        />
-      </AuthProvider>
+      <MemoryRouter>
+        <AuthProvider>
+          <PostCard
+            post={mockPost}
+            onToggleLike={handleToggleLike}
+            onAddComment={handleAddComment}
+            onDeletePost={handleDeletePost}
+          />
+        </AuthProvider>
+      </MemoryRouter>
     );
 
     expect(screen.getByText('Este es un post de prueba')).toBeInTheDocument();

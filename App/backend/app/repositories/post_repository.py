@@ -1,4 +1,4 @@
-# Ref: RF-007, RF-008, RF-009, RF-010, B-007, B-008
+# Ref: RF-007, RF-008, RF-009, RF-010, B-007, B-008, RF2-003, RF2-006, B2-002
 from typing import List, Optional
 from sqlalchemy.orm import Session, joinedload, selectinload
 from sqlalchemy import select, desc
@@ -33,11 +33,38 @@ class PostRepository:
         )
         return list(self.db.scalars(stmt).unique().all())
 
+    def get_following_feed(self, followed_ids: List[int]) -> List[Post]:
+        if not followed_ids:
+            return []
+        stmt = (
+            select(Post)
+            .where(Post.author_id.in_(followed_ids))
+            .options(
+                joinedload(Post.author),
+                selectinload(Post.comments).joinedload(Comment.author),
+                selectinload(Post.likes)
+            )
+            .order_by(desc(Post.created_at), desc(Post.id))
+        )
+        return list(self.db.scalars(stmt).unique().all())
+
+    def get_by_author_id(self, author_id: int) -> List[Post]:
+        stmt = (
+            select(Post)
+            .where(Post.author_id == author_id)
+            .options(
+                joinedload(Post.author),
+                selectinload(Post.comments).joinedload(Comment.author),
+                selectinload(Post.likes)
+            )
+            .order_by(desc(Post.created_at), desc(Post.id))
+        )
+        return list(self.db.scalars(stmt).unique().all())
+
     def create(self, post: Post) -> Post:
         self.db.add(post)
         self.db.commit()
         self.db.refresh(post)
-        # Reload relationships
         return self.get_by_id(post.id)  # type: ignore
 
     def delete(self, post: Post) -> None:
@@ -49,3 +76,6 @@ class PostRepository:
 
     def count_by_author(self, author_id: int) -> int:
         return self.db.query(Post).filter(Post.author_id == author_id).count()
+
+    def count_by_user(self, user_id: int) -> int:
+        return self.count_by_author(user_id)

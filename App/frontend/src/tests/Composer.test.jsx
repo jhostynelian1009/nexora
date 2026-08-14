@@ -1,8 +1,9 @@
-// Ref: RNF-007, B-013, B-019
+// Ref: RNF-007, B-013, B-019, B2-003
 import React from 'react';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { Composer } from '../components/Composer';
 import { AuthProvider } from '../context/AuthContext';
+import { ToastProvider } from '../context/ToastContext';
 import { vi } from 'vitest';
 
 describe('Composer', () => {
@@ -11,7 +12,9 @@ describe('Composer', () => {
 
     render(
       <AuthProvider>
-        <Composer onPostCreated={handlePostCreated} />
+        <ToastProvider>
+          <Composer onPostCreated={handlePostCreated} />
+        </ToastProvider>
       </AuthProvider>
     );
 
@@ -25,7 +28,7 @@ describe('Composer', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(handlePostCreated).toHaveBeenCalledWith('Nuevo contenido de publicación', null);
+      expect(handlePostCreated).toHaveBeenCalledWith('Nuevo contenido de publicación', null, null);
     });
   });
 });

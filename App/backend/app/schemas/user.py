@@ -1,4 +1,4 @@
-# Ref: RF-001, RF-003, RF-004, RF-006, B-003, B-004, B-006
+# Ref: RF-001, RF-003, RF-004, RF-006, B-003, B-004, B-006, RF2-001, RF2-002, B2-002
 from datetime import datetime
 from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
@@ -38,6 +38,8 @@ class UserResponse(BaseModel):
     career: str
     bio: str
     avatar_url: Optional[str] = None
+    avatar_public_id: Optional[str] = None
+    phone: Optional[str] = None
     created_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
@@ -52,6 +54,8 @@ class UserUpdate(BaseModel):
     career: Optional[str] = Field(None, min_length=1, max_length=120)
     bio: Optional[str] = Field(None, max_length=240)
     avatar_url: Optional[str] = Field(None, max_length=500)
+    avatar_public_id: Optional[str] = Field(None, max_length=255)
+    phone: Optional[str] = Field(None, max_length=30)
 
     @field_validator("name", "career", "bio")
     @classmethod
@@ -72,3 +76,45 @@ class UserUpdate(BaseModel):
                 raise ValueError("La URL del avatar debe comenzar con http:// o https://")
             return stripped
         return None
+
+    @field_validator("phone")
+    @classmethod
+    def validate_phone_e164(cls, v: Optional[str]) -> Optional[str]:
+        if v is not None and v.strip() != "":
+            stripped = v.strip().replace(" ", "").replace("-", "")
+            if not stripped.startswith("+"):
+                stripped = "+593" + stripped.lstrip("0")
+            if not stripped[1:].isdigit() or len(stripped) < 8 or len(stripped) > 15:
+                raise ValueError("El número telefónico debe cumplir el formato E.164 (ej. +593987654321).")
+            return stripped
+        return None
+
+class UserSummary(BaseModel):
+    id: int
+    name: str
+    career: str
+    avatar_url: Optional[str] = None
+    bio: Optional[str] = None
+    is_followed_by_me: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+UserSearchResponse = UserSummary
+
+# Public profile schema - MUST NOT expose email, phone or avatar_public_id (Task 25)
+class UserProfilePublic(BaseModel):
+    id: int
+    name: str
+    career: str
+    bio: str
+    avatar_url: Optional[str] = None
+    created_at: datetime
+    posts_count: int = 0
+    followers_count: int = 0
+    following_count: int = 0
+    is_followed_by_me: bool = False
+    is_me: bool = False
+
+    model_config = ConfigDict(from_attributes=True)
+
+PublicUserProfile = UserProfilePublic

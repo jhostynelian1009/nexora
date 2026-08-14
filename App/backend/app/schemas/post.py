@@ -1,4 +1,4 @@
-# Ref: RF-007, RF-008, RF-009, RF-010, B-007, B-008
+# Ref: RF-007, RF-008, RF-009, RF-010, B-007, B-008, B2-003
 from datetime import datetime
 from typing import List, Optional
 from pydantic import BaseModel, ConfigDict, Field, field_validator
@@ -7,6 +7,7 @@ from app.schemas.comment import AuthorSummary, CommentResponse
 class PostCreate(BaseModel):
     content: str = Field(..., min_length=1)
     image_url: Optional[str] = Field(None, max_length=500)
+    image_public_id: Optional[str] = Field(None, max_length=255)
 
     @field_validator("content")
     @classmethod
@@ -30,6 +31,7 @@ class PostResponse(BaseModel):
     id: int
     content: str
     image_url: Optional[str] = None
+    image_public_id: Optional[str] = None
     created_at: datetime
     author: AuthorSummary
     likes_count: int = 0

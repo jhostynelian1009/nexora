@@ -1,4 +1,4 @@
-# Ref: RF-007, RF-008, B-002
+# Ref: RF-007, RF-008, B-002, B2-003
 from datetime import datetime, timezone
 from typing import List, TYPE_CHECKING
 from sqlalchemy import String, Text, DateTime, ForeignKey, Integer
@@ -16,6 +16,7 @@ class Post(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     image_url: Mapped[str | None] = mapped_column(String(500), nullable=True)
+    image_public_id: Mapped[str | None] = mapped_column(String(255), nullable=True)
     author_id: Mapped[int] = mapped_column(Integer, ForeignKey("users.id", ondelete="CASCADE"), index=True, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime, index=True, nullable=False, default=lambda: datetime.now(timezone.utc))
 

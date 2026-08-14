@@ -1,13 +1,20 @@
-// Ref: RF-003, RNF-001, B-004, B-012, RF2-013, RF2-014, B2-007
+// Ref: RF-003, RNF-001, B-004, B-012, RF2-013, RF2-014, B2-007, AND-RF-002
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Sparkles, LogIn, UserCheck, Mail, Lock, Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { useServerAvailabilitySafe } from '../context/ServerAvailabilityContext';
 import { PasswordResetModal } from '../components/PasswordResetModal';
+import { AndroidDownloadCard } from '../components/AndroidDownloadCard';
+import { ServerStartupStatus } from '../components/ServerStartupStatus';
 
 export const LoginPage = () => {
   const { login } = useAuth();
+  const serverAvail = useServerAvailabilitySafe();
+  const isOnline = serverAvail ? serverAvail.isOnline : true;
+  const isChecking = serverAvail ? serverAvail.isChecking : false;
   const navigate = useNavigate();
+
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -18,6 +25,7 @@ export const LoginPage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!isOnline) return;
     setError('');
     setIsSubmitting(true);
     try {
@@ -46,6 +54,8 @@ export const LoginPage = () => {
           <h1 className="auth-title">Iniciar sesión</h1>
           <p className="auth-subtitle">Conéctate a la comunidad académica Nexora Social v2</p>
         </div>
+
+        <ServerStartupStatus />
 
         <div className="demo-account-box">
           <div className="flex items-center gap-2" style={{ fontWeight: '600', marginBottom: '4px' }}>
@@ -127,10 +137,16 @@ export const LoginPage = () => {
             type="submit"
             className="btn btn-primary w-full"
             style={{ marginTop: '12px' }}
-            disabled={isSubmitting}
+            disabled={isSubmitting || !isOnline}
           >
             <LogIn size={18} />
-            <span>{isSubmitting ? 'Ingresando...' : 'Iniciar Sesión'}</span>
+            <span>
+              {isSubmitting
+                ? 'Ingresando...'
+                : !isOnline
+                ? 'Esperando servidor...'
+                : 'Iniciar Sesión'}
+            </span>
           </button>
         </form>
 
@@ -140,6 +156,8 @@ export const LoginPage = () => {
             Regístrate aquí
           </Link>
         </div>
+
+        <AndroidDownloadCard />
       </div>
 
       <PasswordResetModal isOpen={isResetOpen} onClose={() => setIsResetOpen(false)} />

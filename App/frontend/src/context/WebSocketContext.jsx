@@ -1,6 +1,7 @@
-// Ref: RF2-010, RF2-011, RF2-012, B2-005, B2-006, ADR2-003
+// Ref: RF2-010, RF2-011, RF2-012, B2-005, B2-006, ADR2-003, AND-RF-001, AND-RF-005
 import React, { createContext, useContext, useEffect, useRef, useState, useCallback } from 'react';
 import { useAuth } from './AuthContext';
+import { useServerAvailabilitySafe } from './ServerAvailabilityContext';
 import { api } from '../services/api';
 import { getWebSocketUrl } from '../utils/websocket';
 
@@ -8,6 +9,9 @@ const WebSocketContext = createContext(null);
 
 export const WebSocketProvider = ({ children }) => {
   const { token, user } = useAuth();
+  const serverAvail = useServerAvailabilitySafe();
+  const isOnline = serverAvail ? serverAvail.isOnline : true;
+
   const [connected, setConnected] = useState(false);
   const [unreadNotifsCount, setUnreadNotifsCount] = useState(0);
   const [latestNotification, setLatestNotification] = useState(null);
@@ -23,7 +27,7 @@ export const WebSocketProvider = ({ children }) => {
 
   // Initialize unread notifications count from REST API on login (Task 23)
   useEffect(() => {
-    if (token && user) {
+    if (token && user && isOnline) {
       api.getUnreadNotificationCount()
         .then((res) => {
           if (res && typeof res.count === 'number') {
@@ -33,17 +37,17 @@ export const WebSocketProvider = ({ children }) => {
         .catch((err) => {
           console.error('[Unread Notifs Count Error]', err);
         });
-    } else {
+    } else if (!token || !user) {
       setUnreadNotifsCount(0);
       setLatestNotification(null);
       setIncomingMessage(null);
       setReadAckEvent(null);
       setTypingState({});
     }
-  }, [token, user]);
+  }, [token, user, isOnline]);
 
   const connectWS = useCallback(async () => {
-    if (!token || !user) return;
+    if (!token || !user || !isOnline) return;
     if (socketRef.current && (socketRef.current.readyState === WebSocket.CONNECTING || socketRef.current.readyState === WebSocket.OPEN)) {
       return; // Prevent duplicate connection attempts
     }
@@ -106,7 +110,7 @@ export const WebSocketProvider = ({ children }) => {
         isConnectingRef.current = false;
 
         // Exponential backoff reconnection with jitter (Task 22)
-        if (!intentionalCloseRef.current && token && user) {
+        if (!intentionalCloseRef.current && token && user && isOnline) {
           const jitter = Math.random() * 500;
           const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current) + jitter, 30000);
           reconnectAttemptsRef.current += 1;
@@ -123,17 +127,22 @@ export const WebSocketProvider = ({ children }) => {
       console.error('[WS Ticket Fetch Error]', e);
       isConnectingRef.current = false;
 
-      if (!intentionalCloseRef.current && token && user) {
+      if (!intentionalCloseRef.current && token && user && isOnline) {
         const jitter = Math.random() * 500;
         const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current) + jitter, 30000);
         reconnectAttemptsRef.current += 1;
         reconnectTimeoutRef.current = setTimeout(connectWS, delay);
       }
     }
-  }, [token, user]);
+  }, [token, user, isOnline]);
 
   useEffect(() => {
-    connectWS();
+    if (isOnline) {
+      connectWS();
+    } else if (socketRef.current) {
+      intentionalCloseRef.current = true;
+      socketRef.current.close();
+    }
 
     return () => {
       intentionalCloseRef.current = true;
@@ -142,7 +151,24 @@ export const WebSocketProvider = ({ children }) => {
         socketRef.current.close();
       }
     };
-  }, [connectWS]);
+  }, [connectWS, isOnline]);
+
+  // Reconnect on app foreground / tab visibility change
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && token && user && isOnline) {
+        if (!socketRef.current || socketRef.current.readyState === WebSocket.CLOSED) {
+          reconnectAttemptsRef.current = 0;
+          connectWS();
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [token, user, isOnline, connectWS]);
 
   const sendEvent = useCallback((eventData) => {
     if (socketRef.current && socketRef.current.readyState === WebSocket.OPEN) {

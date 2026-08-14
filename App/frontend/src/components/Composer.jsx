@@ -1,9 +1,11 @@
-// Ref: RF-007, RF-008, B-007, B-013, RF2-008, B2-003
+// Ref: RF-007, RF-008, B-007, B-013, RF2-008, B2-003, AND-RF-003, AND-B-004
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Image as ImageIcon, X, UploadCloud, Loader } from 'lucide-react';
+import { Send, Image as ImageIcon, X, UploadCloud, Loader, Camera, Images as GalleryIcon } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { api } from '../services/api';
+import { isNativePlatform } from '../utils/platform';
+import { captureImageNative } from '../utils/cameraHelper';
 
 export const Composer = ({ onPostCreated }) => {
   const { user } = useAuth();
@@ -22,7 +24,6 @@ export const Composer = ({ onPostCreated }) => {
 
   const getInitial = (name) => (name ? name.charAt(0).toUpperCase() : 'U');
 
-  // Clean up Object URL on unmount or file change (Task 30)
   useEffect(() => {
     return () => {
       if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
@@ -59,6 +60,26 @@ export const Composer = ({ onPostCreated }) => {
     setError('');
   };
 
+  const handleNativeCapture = async (source) => {
+    try {
+      const file = await captureImageNative(source);
+      if (!file) return;
+
+      if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
+        URL.revokeObjectURL(localPreviewUrl);
+      }
+      const objectUrl = URL.createObjectURL(file);
+      setSelectedFile(file);
+      setLocalPreviewUrl(objectUrl);
+      setImageUrl('');
+      setImagePublicId('');
+      setError('');
+    } catch (err) {
+      setError(err.message || 'Error al capturar la imagen.');
+      showToast(err.message || 'Error con la cámara o galería', 'error');
+    }
+  };
+
   const handleRemoveImage = () => {
     if (localPreviewUrl && localPreviewUrl.startsWith('blob:')) {
       URL.revokeObjectURL(localPreviewUrl);
@@ -83,7 +104,6 @@ export const Composer = ({ onPostCreated }) => {
 
     try {
       if (selectedFile) {
-        // Atomic Post + Image Endpoint (Task 28)
         const newPost = await api.createPostWithImage(content.trim(), selectedFile);
         if (onPostCreated) {
           onPostCreated(newPost);
@@ -143,22 +163,47 @@ export const Composer = ({ onPostCreated }) => {
             </div>
 
             <div className="flex gap-2 mb-2" style={{ flexWrap: 'wrap' }}>
-              <input
-                type="file"
-                ref={fileInputRef}
-                accept="image/png, image/jpeg, image/webp"
-                style={{ display: 'none' }}
-                onChange={handleFileSelect}
-              />
-              <button
-                type="button"
-                className="btn btn-sm btn-secondary"
-                onClick={() => fileInputRef.current?.click()}
-                disabled={isUploading}
-              >
-                <UploadCloud size={14} />
-                <span>Seleccionar archivo local</span>
-              </button>
+              {isNativePlatform() ? (
+                <>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => handleNativeCapture('camera')}
+                    disabled={isUploading}
+                  >
+                    <Camera size={14} />
+                    <span>Tomar foto con cámara</span>
+                  </button>
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => handleNativeCapture('photos')}
+                    disabled={isUploading}
+                  >
+                    <GalleryIcon size={14} />
+                    <span>Seleccionar de galería</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <input
+                    type="file"
+                    ref={fileInputRef}
+                    accept="image/png, image/jpeg, image/webp"
+                    style={{ display: 'none' }}
+                    onChange={handleFileSelect}
+                  />
+                  <button
+                    type="button"
+                    className="btn btn-sm btn-secondary"
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isUploading}
+                  >
+                    <UploadCloud size={14} />
+                    <span>Seleccionar archivo local</span>
+                  </button>
+                </>
+              )}
             </div>
 
             {!selectedFile && (
@@ -171,7 +216,6 @@ export const Composer = ({ onPostCreated }) => {
               />
             )}
 
-            {/* Image Preview & Remove Button (Task 29, 30) */}
             {(localPreviewUrl || imageUrl) && (
               <div className="relative mt-2" style={{ maxHeight: '220px', overflow: 'hidden', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.1)' }}>
                 <img

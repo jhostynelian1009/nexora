@@ -1,8 +1,10 @@
-// Ref: RNF-008, B-001, B-011, B2-001..B2-011, ADR2-003
+// Ref: RNF-008, B-001, B-011, B2-001..B2-011, ADR2-003, AND-RF-002
+import { storage } from './storage';
+
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
 function getAuthHeaders(isFormData = false) {
-  const token = localStorage.getItem('nexora_token');
+  const token = storage.getItemSync('nexora_token');
   const headers = {};
   if (!isFormData) {
     headers['Content-Type'] = 'application/json';
@@ -13,9 +15,10 @@ function getAuthHeaders(isFormData = false) {
   return headers;
 }
 
-async function request(endpoint, options = {}, timeoutMs = 10000) {
+async function request(endpoint, options = {}, customTimeout = null) {
   const url = `${API_URL}${endpoint}`;
   const isFormData = options.body instanceof FormData;
+  const timeoutMs = customTimeout !== null ? customTimeout : (options.timeout || 10000);
   
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -37,9 +40,10 @@ async function request(endpoint, options = {}, timeoutMs = 10000) {
       return null;
     }
 
-    if (response.status === 401 && endpoint !== '/api/auth/login' && endpoint !== '/api/auth/me') {
+    if (response.status === 401 && endpoint !== '/api/auth/login' && endpoint !== '/api/auth/me' && endpoint !== '/health') {
       // Clear expired token if 401 occurs on protected routes
-      localStorage.removeItem('nexora_token');
+      storage.removeItem('nexora_token');
+      storage.removeItem('nexora_user');
     }
 
     let data;
@@ -61,16 +65,26 @@ async function request(endpoint, options = {}, timeoutMs = 10000) {
   } catch (error) {
     clearTimeout(timeoutId);
     if (error.name === 'AbortError') {
-      throw new Error('La solicitud excedió el tiempo de espera (timeout). Por favor reintenta.');
+      const timeoutErr = new Error('La solicitud excedió el tiempo de espera (timeout). Por favor reintenta.');
+      timeoutErr.name = 'TimeoutError';
+      timeoutErr.isTimeout = true;
+      throw timeoutErr;
     }
-    if (error.message.includes('Failed to fetch') || error.message.includes('NetworkError')) {
-      throw new Error('Fallo de conexión con el servidor Nexora. Revisa tu red.');
+    if (error.message && (error.message.includes('Failed to fetch') || error.message.includes('NetworkError'))) {
+      const networkErr = new Error('Fallo de conexión con el servidor Nexora. Revisa tu red.');
+      networkErr.name = 'NetworkError';
+      networkErr.isNetwork = true;
+      throw networkErr;
     }
     throw error;
   }
 }
 
 export const api = {
+  // Health check forRender cold-start readiness
+  health: () => request('/health', { method: 'GET' }, 90000),
+
+
   // Auth
   login: (email, password) =>
     request('/api/auth/login', {
